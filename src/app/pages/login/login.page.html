@@ -1,0 +1,17 @@
+<ion-header>
+  <ion-toolbar color="primary"><ion-title>Programas FACPYA</ion-title></ion-toolbar>
+</ion-header>
+
+<ion-content class="ion-padding">
+  <h2>Iniciar sesión</h2>
+  <ion-input label="Usuario" labelPlacement="floating" fill="outline" autocomplete="username"
+    errorText="Requerido" [class.ion-invalid]="intentado && !usuario.trim()" [class.ion-touched]="intentado"
+    [(ngModel)]="usuario"></ion-input>
+  <ion-input class="ion-margin-top" label="Contraseña" labelPlacement="floating" fill="outline" type="password"
+    autocomplete="current-password" errorText="Requerido"
+    [class.ion-invalid]="intentado && !password" [class.ion-touched]="intentado"
+    [(ngModel)]="password" (keyup.enter)="entrar()"></ion-input>
+  <ion-button class="ion-margin-top" expand="block" [disabled]="cargando" (click)="entrar()">
+    @if (cargando) { <ion-spinner name="dots"></ion-spinner> } @else { Entrar }
+  </ion-button>
+</ion-content>

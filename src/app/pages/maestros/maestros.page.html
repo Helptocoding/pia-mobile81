@@ -1,0 +1,75 @@
+<ion-header>
+  <ion-toolbar color="primary"><ion-title>Maestros</ion-title></ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="cargar($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  @if (cargando) {
+    <div class="ion-text-center ion-padding"><ion-spinner></ion-spinner></div>
+  } @else if (error) {
+    <p class="ion-text-center ion-padding">No se pudo conectar con el servidor. Jala para reintentar.</p>
+  } @else if (maestros.length === 0) {
+    <p class="ion-text-center ion-padding">No hay maestros registrados.</p>
+  } @else {
+    <ion-searchbar placeholder="Buscar por nombre, especialidad o correo" [(ngModel)]="busqueda"></ion-searchbar>
+    @if (filtrados.length === 0) {
+      <p class="ion-text-center ion-padding">Sin resultados.</p>
+    }
+    <ion-list>
+      @for (m of filtrados; track m.idMaestro) {
+        <ion-item-sliding [disabled]="!auth.puedeEscribir">
+          <ion-item>
+            <ion-label>
+              <h2>{{ m.nombre }} {{ m.aPaterno }} {{ m.aMaterno }}</h2>
+              @if (m.especialidad) { <p>{{ m.especialidad }}</p> }
+              @if (m.correo) { <p>{{ m.correo }}</p> }
+              <p>Registro: {{ m.fecRegistro | date: 'dd/MM/yyyy' }}</p>
+            </ion-label>
+            <ion-badge slot="end" color="medium">{{ m.totalMaterias }} {{ m.totalMaterias === 1 ? 'materia' : 'materias' }}</ion-badge>
+          </ion-item>
+          <ion-item-options side="end">
+            <ion-item-option color="primary" (click)="abrirForm(m)"><ion-icon slot="icon-only" name="create"></ion-icon></ion-item-option>
+            @if (auth.esAdmin) {
+              <ion-item-option color="danger" (click)="confirmarEliminar(m)"><ion-icon slot="icon-only" name="trash"></ion-icon></ion-item-option>
+            }
+          </ion-item-options>
+        </ion-item-sliding>
+      }
+    </ion-list>
+  }
+
+  @if (auth.puedeEscribir) {
+    <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+      <ion-fab-button (click)="abrirForm()"><ion-icon name="add"></ion-icon></ion-fab-button>
+    </ion-fab>
+  }
+
+  <ion-modal [isOpen]="modalAbierto" (didDismiss)="cerrarForm()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>{{ editandoId !== null ? 'Editar maestro' : 'Nuevo maestro' }}</ion-title>
+          <ion-buttons slot="start"><ion-button (click)="cerrarForm()">Cancelar</ion-button></ion-buttons>
+          <ion-buttons slot="end"><ion-button strong [disabled]="guardando" (click)="guardar()">Guardar</ion-button></ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        <ion-input label="Nombre" labelPlacement="floating" fill="outline" errorText="Solo letras (2 a 50)" maxlength="50"
+          [class.ion-invalid]="intentado && nombreInvalido(form.nombre)" [class.ion-touched]="intentado" [(ngModel)]="form.nombre"></ion-input>
+        <ion-input class="ion-margin-top" label="Apellido paterno" labelPlacement="floating" fill="outline" errorText="Solo letras (2 a 50)" maxlength="50"
+          [class.ion-invalid]="intentado && nombreInvalido(form.aPaterno)" [class.ion-touched]="intentado" [(ngModel)]="form.aPaterno"></ion-input>
+        <ion-input class="ion-margin-top" label="Apellido materno" labelPlacement="floating" fill="outline" errorText="Solo letras (2 a 50)" maxlength="50"
+          [class.ion-invalid]="intentado && nombreInvalido(form.aMaterno)" [class.ion-touched]="intentado" [(ngModel)]="form.aMaterno"></ion-input>
+        <ion-input class="ion-margin-top" label="Especialidad (opcional)" labelPlacement="floating" fill="outline" maxlength="60"
+          [(ngModel)]="form.especialidad"></ion-input>
+        <ion-input class="ion-margin-top" label="Correo (opcional)" labelPlacement="floating" fill="outline" type="email" errorText="Correo no válido" maxlength="100"
+          [class.ion-invalid]="intentado && correoInvalido(form.correo)" [class.ion-touched]="intentado" [(ngModel)]="form.correo"></ion-input>
+        <ion-input class="ion-margin-top" label="Teléfono (opcional)" labelPlacement="floating" fill="outline" type="tel" inputmode="numeric" errorText="10 dígitos" maxlength="10"
+          [class.ion-invalid]="intentado && telefonoInvalido(form.telefono)" [class.ion-touched]="intentado" [(ngModel)]="form.telefono"></ion-input>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+</ion-content>

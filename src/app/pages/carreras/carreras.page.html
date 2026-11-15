@@ -1,0 +1,68 @@
+<ion-header>
+  <ion-toolbar color="primary"><ion-title>Carreras</ion-title></ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="cargar($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  @if (cargando) {
+    <div class="ion-text-center ion-padding"><ion-spinner></ion-spinner></div>
+  } @else if (error) {
+    <p class="ion-text-center ion-padding">No se pudo conectar con el servidor. Jala para reintentar.</p>
+  } @else if (carreras.length === 0) {
+    <p class="ion-text-center ion-padding">No hay carreras registradas.</p>
+  } @else {
+    <ion-searchbar placeholder="Buscar carrera" [(ngModel)]="busqueda"></ion-searchbar>
+    @if (filtradas.length === 0) {
+      <p class="ion-text-center ion-padding">Sin resultados.</p>
+    }
+    <ion-list>
+      @for (c of filtradas; track c.idCarrera) {
+        <ion-item-sliding [disabled]="!auth.puedeEscribir">
+          <ion-item button detail (click)="verAlumnos(c)">
+            <ion-label>{{ c.descripcion }}</ion-label>
+            <ion-badge slot="end" color="medium">{{ c.totalAlumnos }} {{ c.totalAlumnos === 1 ? 'alumno' : 'alumnos' }}</ion-badge>
+          </ion-item>
+          <ion-item-options side="end">
+            <ion-item-option color="primary" (click)="abrirForm(c)"><ion-icon slot="icon-only" name="create"></ion-icon></ion-item-option>
+            @if (auth.esAdmin) {
+              <ion-item-option color="danger" (click)="confirmarEliminar(c)"><ion-icon slot="icon-only" name="trash"></ion-icon></ion-item-option>
+            }
+          </ion-item-options>
+        </ion-item-sliding>
+      }
+    </ion-list>
+  }
+
+  @if (auth.puedeEscribir) {
+    <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+      <ion-fab-button (click)="abrirForm()"><ion-icon name="add"></ion-icon></ion-fab-button>
+    </ion-fab>
+  }
+
+  <ion-modal [isOpen]="detalleAbierto" (didDismiss)="detalleAbierto = false">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>{{ carreraSel?.descripcion }}</ion-title>
+          <ion-buttons slot="end"><ion-button (click)="detalleAbierto = false">Cerrar</ion-button></ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content>
+        @if (cargandoDetalle) {
+          <div class="ion-text-center ion-padding"><ion-spinner></ion-spinner></div>
+        } @else if (alumnosCarrera.length === 0) {
+          <p class="ion-text-center ion-padding">Esta carrera no tiene alumnos.</p>
+        } @else {
+          <ion-list>
+            @for (a of alumnosCarrera; track a.idAlumno) {
+              <ion-item><ion-label>{{ a.nombre }} {{ a.aPaterno }} {{ a.aMaterno }}</ion-label></ion-item>
+            }
+          </ion-list>
+        }
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+</ion-content>

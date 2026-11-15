@@ -1,0 +1,80 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start"><ion-back-button defaultHref="/tabs/mas" text=""></ion-back-button></ion-buttons>
+    <ion-title>Inscripciones</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="cargar($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  @if (cargando) {
+    <div class="ion-text-center ion-padding"><ion-spinner></ion-spinner></div>
+  } @else if (error) {
+    <p class="ion-text-center ion-padding">No se pudo conectar con el servidor. Jala para reintentar.</p>
+  } @else if (inscripciones.length === 0) {
+    <p class="ion-text-center ion-padding">No hay inscripciones registradas.</p>
+  } @else {
+    <ion-searchbar placeholder="Buscar alumno, matrícula o materia" [(ngModel)]="busqueda"></ion-searchbar>
+    @if (filtradas.length === 0) {
+      <p class="ion-text-center ion-padding">Sin resultados.</p>
+    }
+    <ion-list>
+      @for (i of filtradas; track i.idInscripcion) {
+        <ion-item-sliding [disabled]="!auth.puedeEscribir">
+          <ion-item>
+            <ion-label>
+              <h2>{{ i.alumno }}</h2>
+              <p>{{ i.clave }} · {{ i.materia }}</p>
+              <p>Inscrito: {{ i.fecInscripcion | date: 'dd/MM/yyyy' }}</p>
+            </ion-label>
+            <ion-badge slot="end" [color]="colorCalificacion(i.calificacion)">
+              {{ i.calificacion !== null ? (i.calificacion | number: '1.0-1') : 'Sin calificar' }}
+            </ion-badge>
+          </ion-item>
+          <ion-item-options side="end">
+            <ion-item-option color="primary" (click)="calificar(i)"><ion-icon slot="icon-only" name="ribbon"></ion-icon></ion-item-option>
+            @if (auth.esAdmin) {
+              <ion-item-option color="danger" (click)="confirmarEliminar(i)"><ion-icon slot="icon-only" name="trash"></ion-icon></ion-item-option>
+            }
+          </ion-item-options>
+        </ion-item-sliding>
+      }
+    </ion-list>
+  }
+
+  @if (auth.puedeEscribir) {
+    <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+      <ion-fab-button (click)="abrirForm()"><ion-icon name="add"></ion-icon></ion-fab-button>
+    </ion-fab>
+  }
+
+  <ion-modal [isOpen]="modalAbierto" (didDismiss)="cerrarForm()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>Nueva inscripción</ion-title>
+          <ion-buttons slot="start"><ion-button (click)="cerrarForm()">Cancelar</ion-button></ion-buttons>
+          <ion-buttons slot="end"><ion-button strong [disabled]="guardando" (click)="guardar()">Guardar</ion-button></ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        <ion-select label="Alumno" labelPlacement="floating" fill="outline" interface="popover" errorText="Selecciona un alumno"
+          [class.ion-invalid]="intentado && form.idAlumno === null" [class.ion-touched]="intentado" [(ngModel)]="form.idAlumno">
+          @for (a of alumnos; track a.idAlumno) {
+            <ion-select-option [value]="a.idAlumno">{{ a.matricula }} · {{ a.nombre }} {{ a.aPaterno }}</ion-select-option>
+          }
+        </ion-select>
+        <ion-select class="ion-margin-top" label="Materia" labelPlacement="floating" fill="outline" interface="popover" errorText="Selecciona una materia"
+          [class.ion-invalid]="intentado && form.idMateria === null" [class.ion-touched]="intentado" [(ngModel)]="form.idMateria">
+          @for (m of materias; track m.idMateria) {
+            <ion-select-option [value]="m.idMateria">{{ m.clave }} · {{ m.nombre }}</ion-select-option>
+          }
+        </ion-select>
+        <p class="ion-padding-top"><small>Un alumno puede tener hasta 6 materias y cada materia admite 30 alumnos.</small></p>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+</ion-content>

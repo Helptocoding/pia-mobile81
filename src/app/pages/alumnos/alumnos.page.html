@@ -1,0 +1,132 @@
+<ion-header>
+  <ion-toolbar color="primary"><ion-title>Alumnos</ion-title></ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="cargar($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  @if (cargando) {
+    <div class="ion-text-center ion-padding"><ion-spinner></ion-spinner></div>
+  } @else if (error) {
+    <p class="ion-text-center ion-padding">No se pudo conectar con el servidor. Jala para reintentar.</p>
+  } @else if (alumnos.length === 0) {
+    <p class="ion-text-center ion-padding">No hay alumnos registrados.</p>
+  } @else {
+    <ion-searchbar placeholder="Buscar por nombre, matrícula, carrera o correo" [(ngModel)]="busqueda"></ion-searchbar>
+    @if (filtrados.length === 0) {
+      <p class="ion-text-center ion-padding">Sin resultados.</p>
+    }
+    <ion-list>
+      @for (a of filtrados; track a.idAlumno) {
+        <ion-item-sliding [disabled]="!auth.puedeEscribir">
+          <ion-item button detail (click)="verDetalle(a)">
+            <ion-label>
+              <h2>{{ a.nombre }} {{ a.aPaterno }} {{ a.aMaterno }}</h2>
+              <p>{{ a.matricula }} · {{ a.carrera }}</p>
+              <p>Registro: {{ a.fecRegistro | date: 'dd/MM/yyyy' }}</p>
+            </ion-label>
+            @if (a.promedio !== null) {
+              <ion-badge slot="end" [color]="colorCalificacion(a.promedio)">{{ a.promedio | number: '1.0-1' }}</ion-badge>
+            }
+          </ion-item>
+          <ion-item-options side="end">
+            <ion-item-option color="primary" (click)="abrirForm(a)"><ion-icon slot="icon-only" name="create"></ion-icon></ion-item-option>
+            @if (auth.esAdmin) {
+              <ion-item-option color="danger" (click)="confirmarEliminar(a)"><ion-icon slot="icon-only" name="trash"></ion-icon></ion-item-option>
+            }
+          </ion-item-options>
+        </ion-item-sliding>
+      }
+    </ion-list>
+  }
+
+  @if (auth.puedeEscribir) {
+    <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+      <ion-fab-button (click)="abrirForm()"><ion-icon name="add"></ion-icon></ion-fab-button>
+    </ion-fab>
+  }
+
+  <!-- Formulario -->
+  <ion-modal [isOpen]="modalAbierto" (didDismiss)="cerrarForm()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>{{ editandoId !== null ? 'Editar alumno' : 'Nuevo alumno' }}</ion-title>
+          <ion-buttons slot="start"><ion-button (click)="cerrarForm()">Cancelar</ion-button></ion-buttons>
+          <ion-buttons slot="end"><ion-button strong [disabled]="guardando" (click)="guardar()">Guardar</ion-button></ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        <ion-input label="Nombre" labelPlacement="floating" fill="outline" errorText="Solo letras (2 a 50)" maxlength="50"
+          [class.ion-invalid]="intentado && nombreInvalido(form.nombre)" [class.ion-touched]="intentado" [(ngModel)]="form.nombre"></ion-input>
+        <ion-input class="ion-margin-top" label="Apellido paterno" labelPlacement="floating" fill="outline" errorText="Solo letras (2 a 50)" maxlength="50"
+          [class.ion-invalid]="intentado && nombreInvalido(form.aPaterno)" [class.ion-touched]="intentado" [(ngModel)]="form.aPaterno"></ion-input>
+        <ion-input class="ion-margin-top" label="Apellido materno" labelPlacement="floating" fill="outline" errorText="Solo letras (2 a 50)" maxlength="50"
+          [class.ion-invalid]="intentado && nombreInvalido(form.aMaterno)" [class.ion-touched]="intentado" [(ngModel)]="form.aMaterno"></ion-input>
+        <ion-select class="ion-margin-top" label="Carrera" labelPlacement="floating" fill="outline" interface="popover" errorText="Selecciona una carrera"
+          [class.ion-invalid]="intentado && form.idCarrera === null" [class.ion-touched]="intentado" [(ngModel)]="form.idCarrera">
+          @for (c of carreras; track c.idCarrera) {
+            <ion-select-option [value]="c.idCarrera">{{ c.descripcion }}</ion-select-option>
+          }
+        </ion-select>
+        <ion-input class="ion-margin-top" label="Correo (opcional)" labelPlacement="floating" fill="outline" type="email" errorText="Correo no válido" maxlength="100"
+          [class.ion-invalid]="intentado && correoInvalido(form.correo)" [class.ion-touched]="intentado" [(ngModel)]="form.correo"></ion-input>
+        <ion-input class="ion-margin-top" label="Teléfono (opcional)" labelPlacement="floating" fill="outline" type="tel" inputmode="numeric" errorText="10 dígitos" maxlength="10"
+          [class.ion-invalid]="intentado && telefonoInvalido(form.telefono)" [class.ion-touched]="intentado" [(ngModel)]="form.telefono"></ion-input>
+        <ion-input class="ion-margin-top" label="Fecha de nacimiento (opcional)" labelPlacement="stacked" fill="outline" type="date" [max]="hoy" errorText="Debe ser pasada y tener al menos 15 años"
+          [class.ion-invalid]="intentado && fechaNacimientoInvalida(form.fechaNacimiento)" [class.ion-touched]="intentado" [(ngModel)]="form.fechaNacimiento"></ion-input>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+  <!-- Detalle -->
+  <ion-modal [isOpen]="detalleAbierto" (didDismiss)="detalleAbierto = false">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>{{ alumnoSel?.nombre }} {{ alumnoSel?.aPaterno }}</ion-title>
+          <ion-buttons slot="end"><ion-button (click)="detalleAbierto = false">Cerrar</ion-button></ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content>
+        @if (alumnoSel; as a) {
+          <ion-list lines="full">
+            <ion-item><ion-label>Matrícula</ion-label><ion-note slot="end">{{ a.matricula }}</ion-note></ion-item>
+            <ion-item><ion-label>Carrera</ion-label><ion-note slot="end">{{ a.carrera }}</ion-note></ion-item>
+            <ion-item><ion-label>Correo</ion-label><ion-note slot="end">{{ a.correo || '—' }}</ion-note></ion-item>
+            <ion-item><ion-label>Teléfono</ion-label><ion-note slot="end">{{ a.telefono || '—' }}</ion-note></ion-item>
+            <ion-item><ion-label>Nacimiento</ion-label><ion-note slot="end">{{ a.fechaNacimiento ? (a.fechaNacimiento | date: 'dd/MM/yyyy') : '—' }}</ion-note></ion-item>
+            <ion-item>
+              <ion-label>Promedio</ion-label>
+              @if (a.promedio !== null) {
+                <ion-badge slot="end" [color]="colorCalificacion(a.promedio)">{{ a.promedio | number: '1.0-1' }}</ion-badge>
+              } @else { <ion-note slot="end">Sin calificaciones</ion-note> }
+            </ion-item>
+          </ion-list>
+        }
+        <h3 class="ion-padding-horizontal">Materias inscritas</h3>
+        @if (cargandoDetalle) {
+          <div class="ion-text-center ion-padding"><ion-spinner></ion-spinner></div>
+        } @else if (inscripciones.length === 0) {
+          <p class="ion-text-center ion-padding">No está inscrito en ninguna materia.</p>
+        } @else {
+          <ion-list>
+            @for (i of inscripciones; track i.idInscripcion) {
+              <ion-item>
+                <ion-label>
+                  <h2>{{ i.materia }}</h2>
+                  <p>{{ i.clave }} · {{ i.creditos }} créditos</p>
+                </ion-label>
+                <ion-badge slot="end" [color]="colorCalificacion(i.calificacion)">
+                  {{ i.calificacion !== null ? (i.calificacion | number: '1.0-1') : 'Sin calificar' }}
+                </ion-badge>
+              </ion-item>
+            }
+          </ion-list>
+        }
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+</ion-content>

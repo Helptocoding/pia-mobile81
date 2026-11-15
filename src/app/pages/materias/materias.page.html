@@ -1,0 +1,77 @@
+<ion-header>
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start"><ion-back-button defaultHref="/tabs/mas" text=""></ion-back-button></ion-buttons>
+    <ion-title>Materias</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="cargar($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
+
+  @if (cargando) {
+    <div class="ion-text-center ion-padding"><ion-spinner></ion-spinner></div>
+  } @else if (error) {
+    <p class="ion-text-center ion-padding">No se pudo conectar con el servidor. Jala para reintentar.</p>
+  } @else if (materias.length === 0) {
+    <p class="ion-text-center ion-padding">No hay materias registradas.</p>
+  } @else {
+    <ion-searchbar placeholder="Buscar por clave, nombre o maestro" [(ngModel)]="busqueda"></ion-searchbar>
+    @if (filtradas.length === 0) {
+      <p class="ion-text-center ion-padding">Sin resultados.</p>
+    }
+    <ion-list>
+      @for (m of filtradas; track m.idMateria) {
+        <ion-item-sliding [disabled]="!auth.puedeEscribir">
+          <ion-item>
+            <ion-label>
+              <h2>{{ m.nombre }}</h2>
+              <p>{{ m.clave }} · {{ m.creditos }} créditos</p>
+              <p>{{ m.maestro || 'Sin maestro asignado' }}</p>
+            </ion-label>
+            <ion-badge slot="end" color="medium">{{ m.inscritos }} inscritos</ion-badge>
+          </ion-item>
+          <ion-item-options side="end">
+            <ion-item-option color="primary" (click)="abrirForm(m)"><ion-icon slot="icon-only" name="create"></ion-icon></ion-item-option>
+            @if (auth.esAdmin) {
+              <ion-item-option color="danger" (click)="confirmarEliminar(m)"><ion-icon slot="icon-only" name="trash"></ion-icon></ion-item-option>
+            }
+          </ion-item-options>
+        </ion-item-sliding>
+      }
+    </ion-list>
+  }
+
+  @if (auth.puedeEscribir) {
+    <ion-fab slot="fixed" vertical="bottom" horizontal="end">
+      <ion-fab-button (click)="abrirForm()"><ion-icon name="add"></ion-icon></ion-fab-button>
+    </ion-fab>
+  }
+
+  <ion-modal [isOpen]="modalAbierto" (didDismiss)="cerrarForm()">
+    <ng-template>
+      <ion-header>
+        <ion-toolbar>
+          <ion-title>{{ editandoId !== null ? 'Editar materia' : 'Nueva materia' }}</ion-title>
+          <ion-buttons slot="start"><ion-button (click)="cerrarForm()">Cancelar</ion-button></ion-buttons>
+          <ion-buttons slot="end"><ion-button strong [disabled]="guardando" (click)="guardar()">Guardar</ion-button></ion-buttons>
+        </ion-toolbar>
+      </ion-header>
+      <ion-content class="ion-padding">
+        <ion-input label="Clave" labelPlacement="floating" fill="outline" errorText="3 a 10 letras o números" maxlength="10"
+          [class.ion-invalid]="intentado && claveInvalida()" [class.ion-touched]="intentado" [(ngModel)]="form.clave"></ion-input>
+        <ion-input class="ion-margin-top" label="Nombre" labelPlacement="floating" fill="outline" errorText="3 a 100 caracteres" maxlength="100"
+          [class.ion-invalid]="intentado && nombreInvalido()" [class.ion-touched]="intentado" [(ngModel)]="form.nombre"></ion-input>
+        <ion-input class="ion-margin-top" label="Créditos" labelPlacement="floating" fill="outline" type="number" min="1" max="12" errorText="Entre 1 y 12"
+          [class.ion-invalid]="intentado && creditosInvalidos()" [class.ion-touched]="intentado" [(ngModel)]="form.creditos"></ion-input>
+        <ion-select class="ion-margin-top" label="Maestro (opcional)" labelPlacement="floating" fill="outline" interface="popover" [(ngModel)]="form.idMaestro">
+          <ion-select-option [value]="0">Sin maestro</ion-select-option>
+          @for (t of maestros; track t.idMaestro) {
+            <ion-select-option [value]="t.idMaestro">{{ t.nombre }} {{ t.aPaterno }} {{ t.aMaterno }}</ion-select-option>
+          }
+        </ion-select>
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+</ion-content>

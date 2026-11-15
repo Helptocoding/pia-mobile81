@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">appProgramas-cascaron</string>
+    <string name="title_activity_main">appProgramas-cascaron</string>
+    <string name="package_name">mx.facpya.programas.cascaron</string>
+    <string name="custom_url_scheme">mx.facpya.programas.cascaron</string>
+</resources>

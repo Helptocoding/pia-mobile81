@@ -11,7 +11,36 @@ export const routes: Routes = [
         loadComponent: () =>
           import('../pages/inicio/inicio.page').then((m) => m.InicioPage),
       },
-      // Agrega aqui las rutas de alumnos, maestros y carreras
+      {
+        path: 'alumnos',
+        loadComponent: () =>
+          import('../pages/alumnos/alumnos.page').then((m) => m.AlumnosPage),
+      },
+      {
+        path: 'maestros',
+        loadComponent: () =>
+          import('../pages/maestros/maestros.page').then((m) => m.MaestrosPage),
+      },
+      {
+        path: 'carreras',
+        loadComponent: () =>
+          import('../pages/carreras/carreras.page').then((m) => m.CarrerasPage),
+      },
+      {
+        path: 'mas',
+        loadComponent: () =>
+          import('../pages/mas/mas.page').then((m) => m.MasPage),
+      },
+      {
+        path: 'mas/materias',
+        loadComponent: () =>
+          import('../pages/materias/materias.page').then((m) => m.MateriasPage),
+      },
+      {
+        path: 'mas/inscripciones',
+        loadComponent: () =>
+          import('../pages/inscripciones/inscripciones.page').then((m) => m.InscripcionesPage),
+      },
       {
         path: '',
         redirectTo: '/tabs/inicio',

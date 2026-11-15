@@ -35,3 +35,27 @@
 /* @import "@ionic/angular/css/palettes/dark.always.css"; */
 /* @import "@ionic/angular/css/palettes/dark.class.css"; */
 @import '@ionic/angular/css/palettes/dark.system.css';
+
+.resumen {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+
+  ion-card {
+    margin: 8px 4px;
+    text-align: center;
+  }
+}
+
+.resumen-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.barra {
+  margin-bottom: 12px;
+
+  .barra-texto {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+}

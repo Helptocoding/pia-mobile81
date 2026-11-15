@@ -1,18 +1,104 @@
-<ion-header [translucent]="true">
-  <ion-toolbar>
-    <ion-title>Inicio</ion-title>
-  </ion-toolbar>
+<ion-header>
+  <ion-toolbar color="primary"><ion-title>Programas FACPYA</ion-title></ion-toolbar>
 </ion-header>
 
-<ion-content [fullscreen]="true">
-  <ion-header collapse="condense">
-    <ion-toolbar>
-      <ion-title size="large">Inicio</ion-title>
-    </ion-toolbar>
-  </ion-header>
+<ion-content>
+  <ion-refresher slot="fixed" (ionRefresh)="cargar($event)">
+    <ion-refresher-content></ion-refresher-content>
+  </ion-refresher>
 
-  <div class="ion-padding">
-    <h2>Programas FACPYA</h2>
-    <p>Sigue el README para agregar las pantallas de Alumnos, Maestros y Carreras.</p>
-  </div>
+  @if (cargando) {
+    <div class="ion-text-center ion-padding"><ion-spinner></ion-spinner></div>
+  } @else if (error) {
+    <p class="ion-text-center ion-padding">No se pudo conectar con el servidor. Jala para reintentar.</p>
+  } @else if (mensaje) {
+    <p class="ion-text-center ion-padding">{{ mensaje }}</p>
+  } @else if (r) {
+    <div class="resumen">
+      <ion-card button (click)="ir('alumnos')">
+        <ion-card-header>
+          <ion-card-subtitle>Alumnos</ion-card-subtitle>
+          <ion-card-title>{{ r.totalAlumnos }}</ion-card-title>
+        </ion-card-header>
+      </ion-card>
+      <ion-card button (click)="ir('maestros')">
+        <ion-card-header>
+          <ion-card-subtitle>Maestros</ion-card-subtitle>
+          <ion-card-title>{{ r.totalMaestros }}</ion-card-title>
+        </ion-card-header>
+      </ion-card>
+      <ion-card button (click)="ir('carreras')">
+        <ion-card-header>
+          <ion-card-subtitle>Carreras</ion-card-subtitle>
+          <ion-card-title>{{ r.totalCarreras }}</ion-card-title>
+        </ion-card-header>
+      </ion-card>
+    </div>
+    <div class="resumen resumen-2">
+      <ion-card button (click)="ir('mas/materias')">
+        <ion-card-header>
+          <ion-card-subtitle>Materias</ion-card-subtitle>
+          <ion-card-title>{{ r.totalMaterias }}</ion-card-title>
+        </ion-card-header>
+      </ion-card>
+      <ion-card button (click)="ir('mas/inscripciones')">
+        <ion-card-header>
+          <ion-card-subtitle>Inscripciones</ion-card-subtitle>
+          <ion-card-title>{{ r.totalInscripciones }}</ion-card-title>
+        </ion-card-header>
+      </ion-card>
+    </div>
+
+    <ion-card>
+      <ion-card-header>
+        <ion-card-subtitle>Rendimiento académico</ion-card-subtitle>
+        <ion-card-title>
+          @if (r.promedioGeneral !== null) { Promedio general {{ r.promedioGeneral | number: '1.0-1' }} }
+          @else { Aún sin calificaciones }
+        </ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        @if (calificados > 0) {
+          <ion-progress-bar color="success" [value]="r.aprobados / calificados"></ion-progress-bar>
+        }
+        <ion-list lines="none">
+          <ion-item><ion-label>Aprobadas (70 o más)</ion-label><ion-badge slot="end" color="success">{{ r.aprobados }}</ion-badge></ion-item>
+          <ion-item><ion-label>Reprobadas</ion-label><ion-badge slot="end" color="danger">{{ r.reprobados }}</ion-badge></ion-item>
+          <ion-item><ion-label>Sin calificar</ion-label><ion-badge slot="end" color="medium">{{ r.sinCalificar }}</ion-badge></ion-item>
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header><ion-card-title>Alumnos por carrera</ion-card-title></ion-card-header>
+      <ion-card-content>
+        @if (r.alumnosPorCarrera.length === 0) {
+          <p>Sin datos.</p>
+        } @else {
+          @for (p of r.alumnosPorCarrera; track p.etiqueta) {
+            <div class="barra">
+              <div class="barra-texto"><span>{{ p.etiqueta }}</span><ion-note>{{ p.total }}</ion-note></div>
+              <ion-progress-bar [value]="fraccion(p.total, r.alumnosPorCarrera)"></ion-progress-bar>
+            </div>
+          }
+        }
+      </ion-card-content>
+    </ion-card>
+
+    <ion-card>
+      <ion-card-header><ion-card-title>Materias más inscritas</ion-card-title></ion-card-header>
+      <ion-card-content>
+        @if (r.materiasMasInscritas.length === 0) {
+          <p>Sin datos.</p>
+        } @else {
+          @for (p of r.materiasMasInscritas; track p.etiqueta) {
+            <div class="barra">
+              <div class="barra-texto"><span>{{ p.etiqueta }}</span><ion-note>{{ p.total }}</ion-note></div>
+              <ion-progress-bar color="tertiary" [value]="fraccion(p.total, r.materiasMasInscritas)"></ion-progress-bar>
+            </div>
+          }
+        }
+      </ion-card-content>
+    </ion-card>
+  }
 </ion-content>
