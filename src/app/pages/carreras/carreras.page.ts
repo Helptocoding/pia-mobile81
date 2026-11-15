@@ -43,7 +43,6 @@ export class CarrerasPage {
     return q ? this.carreras.filter((c) => c.descripcion.toLowerCase().includes(q)) : this.carreras;
   }
 
-  // Detalle: alumnos de la carrera seleccionada
   detalleAbierto = false;
   carreraSel: Carrera | null = null;
   alumnosCarrera: Alumno[] = [];

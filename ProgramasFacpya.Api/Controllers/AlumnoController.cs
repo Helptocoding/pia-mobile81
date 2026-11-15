@@ -106,7 +106,7 @@ public class AlumnoController(Db db) : ControllerBase
             INSERT INTO Alumno (Nombre, APaterno, AMaterno, IdCarrera, Correo, Telefono, FechaNacimiento, FecRegistro)
             VALUES (@n, @p, @m, @carrera, @correo, @tel, @nac, {Db.Ahora}); SELECT last_insert_rowid();
             """, p, tx);
-        // Matrícula automática: año-consecutivo
+
         c.Execute("UPDATE Alumno SET Matricula = @mat WHERE IdAlumno = @id",
             new { id, mat = $"{DateTime.Today.Year}-{id:D5}" }, tx);
         tx.Commit();
@@ -142,7 +142,7 @@ public class AlumnoController(Db db) : ControllerBase
         if (!c.Existe("SELECT COUNT(*) FROM Alumno WHERE IdAlumno = @id", new { id }))
             return Ok(ApiResponse<string>.Error("El alumno no existe"));
         var insc = c.ExecuteScalar<int>("SELECT COUNT(*) FROM Inscripcion WHERE IdAlumno = @id", new { id });
-        c.Execute("DELETE FROM Alumno WHERE IdAlumno = @id", new { id }); // sus inscripciones se borran en cascada
+        c.Execute("DELETE FROM Alumno WHERE IdAlumno = @id", new { id });
         return Ok(ApiResponse<string>.Ok(insc > 0
             ? $"Alumno eliminado junto con sus {insc} inscripciones"
             : "Alumno eliminado correctamente"));

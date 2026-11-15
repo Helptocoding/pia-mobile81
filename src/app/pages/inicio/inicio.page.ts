@@ -46,7 +46,6 @@ export class InicioPage {
     });
   }
 
-  /** Porcentaje de una barra respecto al mayor valor de la lista. */
   fraccion(valor: number, lista: { total: number }[]): number {
     const max = Math.max(1, ...lista.map((x) => x.total));
     return valor / max;

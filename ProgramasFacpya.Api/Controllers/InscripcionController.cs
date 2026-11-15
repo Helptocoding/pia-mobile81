@@ -28,7 +28,7 @@ public class InscripcionDTO
 
 public class CalificacionDTO
 {
-    /// <summary>0 a 100. null = quitar la calificación.</summary>
+
     public double? Calificacion { get; set; }
 }
 

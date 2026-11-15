@@ -3,10 +3,6 @@ import { ApiResponse } from '../models/api-response.model';
 
 const PREFIX = 'cache:';
 
-/**
- * Guarda la última lista correcta en localStorage. Si falla la conexión,
- * regresa esa copia con un aviso en `msg` en lugar de propagar el error.
- */
 export function conCache<T>(
   clave: string,
   fuente$: Observable<ApiResponse<T[]>>,
@@ -14,7 +10,7 @@ export function conCache<T>(
   return fuente$.pipe(
     tap((r) => {
       if (r.status) {
-        try { localStorage.setItem(PREFIX + clave, JSON.stringify(r.value ?? [])); } catch { /* sin espacio */ }
+        try { localStorage.setItem(PREFIX + clave, JSON.stringify(r.value ?? [])); } catch { }
       }
     }),
     catchError((err) => {
@@ -27,7 +23,7 @@ export function conCache<T>(
             msg: 'Sin conexión: mostrando datos guardados',
           });
         }
-      } catch { /* cache ilegible */ }
+      } catch { }
       return throwError(() => err);
     }),
   );

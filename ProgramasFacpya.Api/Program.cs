@@ -11,10 +11,8 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers()
     .ConfigureApiBehaviorOptions(o =>
     {
-        // JSON inválido o tipos incorrectos: se responde 200 con status:false, como el resto de validaciones
         o.InvalidModelStateResponseFactory = ctx =>
         {
-            // Los mensajes por defecto de ASP.NET están en inglés; se usa uno genérico
             return new OkObjectResult(ApiResponse<object>.Error("Los datos enviados no son válidos. Revisa los campos y sus tipos"));
         };
     });
@@ -57,7 +55,6 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 builder.Services.AddAuthorization();
 
-// CORS: permite que el front (ionic serve en :4200, o la app en el celular) llame a la API
 builder.Services.AddCors(o => o.AddPolicy("AllowAll", p =>
     p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
 
@@ -65,7 +62,6 @@ var app = builder.Build();
 
 app.Services.GetRequiredService<Db>().Inicializar();
 
-// Cualquier excepción no controlada responde con el mismo formato en lugar de una página de error
 app.UseExceptionHandler(a => a.Run(async ctx =>
 {
     ctx.Response.StatusCode = StatusCodes.Status500InternalServerError;

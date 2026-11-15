@@ -17,7 +17,6 @@ export interface LoginResult {
   expira: string;
 }
 
-/** Sesión por token JWT. Roles: Admin (todo), Capturista (crear/editar), Consulta (solo lectura). */
 @Injectable({ providedIn: 'root' })
 export class AuthService {
   private http = inject(HttpClient);
@@ -38,12 +37,10 @@ export class AuthService {
   get usuario(): string { return this.sesion?.usuario ?? ''; }
   get rol(): Rol | null { return this.sesion?.rol ?? null; }
 
-  /** Permite crear y editar. Si la autenticación está apagada se permite todo. */
   get puedeEscribir(): boolean {
     return !environment.authEnabled || this.rol === 'Admin' || this.rol === 'Capturista';
   }
 
-  /** Permite eliminar. */
   get esAdmin(): boolean {
     return !environment.authEnabled || this.rol === 'Admin';
   }
@@ -66,7 +63,7 @@ export class AuthService {
                 CLAVE_SESION,
                 JSON.stringify({ usuario: r.value.usuario, rol: r.value.rol, expira: r.value.expira }),
               );
-            } catch { /* sin almacenamiento */ }
+            } catch { }
           }
         }),
       );
@@ -80,9 +77,8 @@ export class AuthService {
     try {
       localStorage.removeItem(CLAVE_TOKEN);
       localStorage.removeItem(CLAVE_SESION);
-      // Borra las listas guardadas para que no queden datos de la sesión anterior
       Object.keys(localStorage).filter((k) => k.startsWith('cache:')).forEach((k) => localStorage.removeItem(k));
-    } catch { /* ignorar */ }
+    } catch { }
     this.router.navigateByUrl('/login');
   }
 }

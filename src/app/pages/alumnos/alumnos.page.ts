@@ -56,7 +56,6 @@ export class AlumnosPage {
     correo: '', telefono: '', fechaNacimiento: '',
   };
 
-  // Detalle
   detalleAbierto = false;
   alumnoSel: Alumno | null = null;
   inscripciones: Inscripcion[] = [];
@@ -64,7 +63,6 @@ export class AlumnosPage {
 
   readonly hoy = new Date().toISOString().slice(0, 10);
 
-  // Validadores expuestos a la plantilla
   nombreInvalido = nombreInvalido;
   correoInvalido = correoInvalido;
   telefonoInvalido = telefonoInvalido;

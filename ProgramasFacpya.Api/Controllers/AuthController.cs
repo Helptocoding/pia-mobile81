@@ -25,7 +25,6 @@ public class AuthController(Db db, IConfiguration config) : ControllerBase
     private static readonly string[] Roles = ["Admin", "Capturista", "Consulta"];
     private static readonly Regex UsuarioRx = new(@"^[a-zA-Z0-9_.\-]{3,30}$", RegexOptions.Compiled);
 
-    // Bloqueo temporal tras demasiados intentos fallidos (en memoria, por usuario)
     private const int MaxIntentos = 5;
     private static readonly TimeSpan Bloqueo = TimeSpan.FromMinutes(5);
     private static readonly ConcurrentDictionary<string, (int Fallos, DateTime? Hasta)> Intentos = new();

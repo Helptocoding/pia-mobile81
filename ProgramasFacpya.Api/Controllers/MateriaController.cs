@@ -63,7 +63,6 @@ public class MateriaController(Db db) : ControllerBase
         maestro = d.IdMaestro,
     };
 
-    /// <summary>Valida maestro (existe, cupo de materias) y devuelve el error o null.</summary>
     private static string? ValidarMaestro(System.Data.IDbConnection c, int? idMaestro, int idMateria)
     {
         if (idMaestro is null) return null;

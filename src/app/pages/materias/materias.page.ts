@@ -45,7 +45,7 @@ export class MateriasPage {
 
   modalAbierto = false;
   editandoId: number | null = null;
-  /** idMaestro 0 = sin maestro asignado */
+
   form = { clave: '', nombre: '', creditos: null as number | null, idMaestro: 0 };
 
   constructor() {

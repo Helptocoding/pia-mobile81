@@ -18,7 +18,6 @@ public class Db(IConfiguration config)
         return c;
     }
 
-    /// <summary>Crea las tablas si no existen y siembra datos de ejemplo la primera vez.</summary>
     public void Inicializar()
     {
         using var c = Crear();

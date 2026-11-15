@@ -2,7 +2,6 @@ using System.Security.Cryptography;
 
 namespace ProgramasFacpya.Api.Common;
 
-/// <summary>PBKDF2-SHA256. Formato guardado: iteraciones.salt.hash (base64).</summary>
 public static class PasswordHasher
 {
     private const int Iteraciones = 100_000;

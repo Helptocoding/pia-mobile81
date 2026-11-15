@@ -10,13 +10,11 @@ public static class Validacion
     private static readonly Regex CorreoRx = new(@"^[^@\s]+@[^@\s]+\.[^@\s]{2,}$", RegexOptions.Compiled);
     private static readonly Regex TelefonoRx = new(@"^\d{10}$", RegexOptions.Compiled);
 
-    /// <summary>Quita espacios al inicio/fin y colapsa espacios repetidos.</summary>
     public static string Limpiar(this string? s) => Regex.Replace((s ?? "").Trim(), @"\s+", " ");
 
     public static bool Existe(this IDbConnection c, string sql, object? p = null) =>
         c.ExecuteScalar<int>(sql, p) > 0;
 
-    /// <summary>Texto de persona: solo letras, espacios, punto, apóstrofo y guion.</summary>
     public static void Nombre(this List<string> e, string? v, string campo, int min = 2, int max = 50)
     {
         var t = v.Limpiar();
@@ -29,20 +27,20 @@ public static class Validacion
     public static void Correo(this List<string> e, string? v)
     {
         var t = (v ?? "").Trim();
-        if (t.Length == 0) return; // opcional
+        if (t.Length == 0) return;
         if (t.Length > 100 || !CorreoRx.IsMatch(t)) e.Add("El correo no tiene un formato válido");
     }
 
     public static void Telefono(this List<string> e, string? v)
     {
         var t = (v ?? "").Trim();
-        if (t.Length == 0) return; // opcional
+        if (t.Length == 0) return;
         if (!TelefonoRx.IsMatch(t)) e.Add("El teléfono debe tener 10 dígitos");
     }
 
     public static void FechaNacimiento(this List<string> e, DateOnly? v)
     {
-        if (v is null) return; // opcional
+        if (v is null) return;
         var hoy = DateOnly.FromDateTime(DateTime.Today);
         if (v > hoy) { e.Add("La fecha de nacimiento no puede ser futura"); return; }
         var edad = hoy.Year - v.Value.Year - (hoy < v.Value.AddYears(hoy.Year - v.Value.Year) ? 1 : 0);
@@ -52,7 +50,6 @@ public static class Validacion
 
     public static string? Primero(this List<string> e) => e.Count == 0 ? null : string.Join("; ", e);
 
-    /// <summary>Contraseña: 8+ caracteres, mayúscula, minúscula y dígito.</summary>
     public static void Password(this List<string> e, string? v, string campo = "La contraseña")
     {
         if (string.IsNullOrEmpty(v)) { e.Add($"{campo} es obligatoria"); return; }

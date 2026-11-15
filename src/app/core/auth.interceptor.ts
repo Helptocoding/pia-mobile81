@@ -4,7 +4,6 @@ import { catchError, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { AuthService } from './auth.service';
 
-/** Agrega el token a cada petición y cierra sesión si la API responde 401. */
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   if (!environment.authEnabled) return next(req);
 

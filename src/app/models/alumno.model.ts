@@ -8,7 +8,7 @@ export interface Alumno {
   carrera?: string;
   correo: string | null;
   telefono: string | null;
-  fechaNacimiento: string | null; // yyyy-MM-dd
+  fechaNacimiento: string | null;
   fecRegistro: string;
   totalMaterias: number;
   promedio: number | null;
